@@ -58,6 +58,12 @@ namespace RecursiveSearchTask
             return string.Join(",", currentLvl);
         }
 
+        public static string GetCategoryByNLvlOprimization(int lvl)
+        {
+
+        }
+
+
         private static IEnumerable<Category> GetKeyword(Category category, IReadOnlyDictionary<int, Category> categoriesDic)
         {
 
