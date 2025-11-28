@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection.Emit;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace RecursiveSearchTask
+﻿namespace RecursiveSearchTask
 {
     public static class SearchService
     {
@@ -25,44 +18,28 @@ namespace RecursiveSearchTask
             return $"ParentCategoryID={category.ParentCategoryId}, Name={category.Name}, Keywords={keyword}";
         }
 
-        public static string GetCategoryByNLvl(int lvl)
+        public static string GetCategoryByNLvl(int level)
         {
+            if (level < 1)
+                throw new Exception("Level must be greater than 1");
 
-            if (lvl < 1)
-                throw new Exception("Level must be greater that 1");
-
+            var firstLevelId = -1;
             var categories = Category.GetTestData();
 
-            //TODO: May be change to Lookup but I like a TryGetValue
-            var categoriesDic = categories.GroupBy(c => c.ParentCategoryId)
-                .ToDictionary(g => g.Key, g => g.Select(x => x.Id).ToList());
+            var lookupCategories = categories.ToLookup(c => c.ParentCategoryId);
 
-            if(!categoriesDic.TryGetValue(-1, out var currentLvl))
-                return string.Empty;
-            
-            if (lvl == 1)
-                return string.Join(",", currentLvl);
+            var current = lookupCategories[firstLevelId];
 
-            for (int l = 2; l <= lvl; l++)
+            if (level != 1)
             {
-                var next = new List<int>();
-
-                foreach (var c in currentLvl)
+                for (int l = 2; l <= level; l++)
                 {
-                    if (categoriesDic.TryGetValue(c, out var children))
-                        next.AddRange(children);
+                    current = current.SelectMany(c => lookupCategories[c.Id]);
                 }
-
-                currentLvl = next;
             }
-            return string.Join(",", currentLvl);
+
+            return string.Join(",", current.Select(x => x.Id));
         }
-
-        public static string GetCategoryByNLvlOprimization(int lvl)
-        {
-
-        }
-
 
         private static IEnumerable<Category> GetKeyword(Category category, IReadOnlyDictionary<int, Category> categoriesDic)
         {
